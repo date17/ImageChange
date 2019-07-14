@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29020.237
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageChange", "ImageChange.csproj", "{76198EA3-D8CE-4EA4-8755-749E2E830E83}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76198EA3-D8CE-4EA4-8755-749E2E830E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76198EA3-D8CE-4EA4-8755-749E2E830E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76198EA3-D8CE-4EA4-8755-749E2E830E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76198EA3-D8CE-4EA4-8755-749E2E830E83}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F6FBEA9-DC47-49A5-97BA-35A05774D6F0}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,9 @@
+C:\Users\date\Desktop\ImageChange\obj\Debug\ImageChange.csprojAssemblyReference.cache
+C:\Users\date\Desktop\ImageChange\obj\Debug\ImageChange.Properties.Resources.resources
+C:\Users\date\Desktop\ImageChange\obj\Debug\ImageChange.csproj.GenerateResource.cache
+C:\Users\date\Desktop\ImageChange\obj\Debug\ImageChange.csproj.CoreCompileInputs.cache
+C:\Users\date\Desktop\ImageChange\bin\Debug\ImageChange.exe.config
+C:\Users\date\Desktop\ImageChange\bin\Debug\ImageChange.exe
+C:\Users\date\Desktop\ImageChange\bin\Debug\ImageChange.pdb
+C:\Users\date\Desktop\ImageChange\obj\Debug\ImageChange.exe
+C:\Users\date\Desktop\ImageChange\obj\Debug\ImageChange.pdb
