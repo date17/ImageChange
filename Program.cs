@@ -32,7 +32,7 @@ namespace ImageChange
 
         class Form1 : Form
         {
-            List<string> progress = new List<string>();
+            List<string> progress = new List<string>(); //処理内容を追加していく
 
             const int SIZE = 256; //画像の縦横の長さ（変えない）
 
@@ -64,6 +64,9 @@ namespace ImageChange
             Button smoothing = new Button(); //平滑化フィルタ
             Button gaussian = new Button(); //ガウシアンフィルタ
             Button sharpening = new Button(); //鮮鋭化フィルタ
+
+            Button binary = new Button(); //二値化
+            TextBox binaryThreshold = new TextBox(); //二値化の閾値を決めるテキストボックス
 
             Button kaityou = new Button(); //変換グラフを用いた階調変換
             TextBox ganma = new TextBox(); //変換グラフを用いた階調変換をする際のγの値を決める
@@ -157,6 +160,17 @@ namespace ImageChange
                 sharpening.Size = new Size(100, 20);
                 sharpening.Click += new EventHandler(Sharpening_click);
 
+                //二値化をするボタン
+                binary.Text = "二値化";
+                binary.Location = new Point(620, 630);
+                binary.Size = new Size(100, 20);
+                binary.Click += new EventHandler(Binary_click);
+
+                //二値化をするときに用いる閾値を設定するテキストボックス
+                binaryThreshold.Location = new Point(750, 630);
+                binaryThreshold.Size = new Size(100, 20);
+
+
                 //変換グラフを用いる処理を実行するボタン
                 kaityou.Text = "変換グラフ";
                 kaityou.Location = new Point(20, 660);
@@ -232,6 +246,8 @@ namespace ImageChange
                 Controls.Add(initialize);
                 Controls.Add(gaussian);
                 Controls.Add(sharpening);
+                Controls.Add(binary);
+                Controls.Add(binaryThreshold);
                 Controls.Add(autocorrelation);
                 Controls.Add(saveImage);
                 Controls.Add(progressImage);
@@ -244,18 +260,29 @@ namespace ImageChange
             //画像を作成する
             void GetImage_click(object sender, EventArgs e)
             {
-                //テキストボックスに書かれた画像のパスを代入
-                var pass = passName.Text;
+                //「""」がパスの中に含まれているときの「""」の除去
+                var provisionalPass = passName.Text.Split('"');
+                if (provisionalPass.Length > 1)
+                {
+                    MessageBox.Show("パスの中に「\"」が含まれています。\nパスの中から「\"」を取り除いてください");
+                }
+                else
+                {
+                    //テキストボックスに書かれた画像のパスを代入
+                    var pass = passName.Text;
 
-                change = new Change(pass); //Changeクラスのオブジェクトを作成（引数はパス）
 
-                imagepix = change.imagepix(); //上記で作成したChangeクラスのインスタンスでimagepixメソッドを呼び出す。そして格納。
 
-                buffer = new Change(pass).imagepix(); //元画像のデータを格納しておく（初期化に対応させるため）
+                    change = new Change(pass); //Changeクラスのオブジェクトを作成（引数はパス）
 
-                pictureBox1.Image = change.changeRaw(); //生成したインスタンスでchangeRawメソッドを呼び出し、picureBoxの画像に代入。
+                    imagepix = change.imagepix(); //上記で作成したChangeクラスのインスタンスでimagepixメソッドを呼び出す。そして格納。
 
-                imageTitle.Text = "元画像"; //画像のタイトル
+                    buffer = new Change(pass).imagepix(); //元画像のデータを格納しておく（初期化に対応させるため）
+
+                    pictureBox1.Image = change.changeRaw(); //生成したインスタンスでchangeRawメソッドを呼び出し、picureBoxの画像に代入。
+
+                    imageTitle.Text = "元画像"; //画像のタイトル
+                }
 
             }
 
@@ -497,6 +524,61 @@ namespace ImageChange
                 }
                 progressImage.Text = text;
 
+            }
+
+            //二値化をする
+            void Binary_click(object sender, EventArgs e)
+            {
+                var value = binaryThreshold.Text;
+
+                if(value.Length < 1)
+                {
+                    MessageBox.Show("閾値を設定してください。");
+                }
+                else
+                {
+                    var sikiiValue = int.Parse(value);
+
+                    Binarization binary = new Binarization();
+
+                    var kekka_binary = binary.Binary_click(imagepix, sikiiValue);
+
+                    for(int i = 0; i < SIZE; i++)
+                    {
+                        for(int j = 0; j < SIZE; j++)
+                        {
+                            bitmapraw.SetPixel(
+                                i,
+                                j,
+                                Color.FromArgb(
+                                    kekka_binary[j, i],
+                                    kekka_binary[j, i],
+                                    kekka_binary[j, i]
+                            ));
+
+                            imagepix[i, j] = (byte)kekka_binary[i, j];
+                            
+                        }
+                    }
+
+                    pictureBox1.Image = bitmapraw;
+                    imageTitle.Text = "二値化";
+
+                    progress.Add("二値化処理(閾値 = " + value + ")");
+
+                    var text = "";
+
+                    foreach (var i in progress)
+                    {
+                        text += i;
+                        text += "\r\n";
+                    }
+
+                    progressImage.Text = text;
+
+
+
+                }
             }
 
             //自己相関を求める

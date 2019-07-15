@@ -9,5 +9,27 @@ namespace ImageChange
 {
     class Binarization
     {
+        public int[,] Binary_click(byte[,] data, int siki)
+        {
+            const int SIZE = 256;
+            int[,] kekka_binary = new int[SIZE, SIZE];
+
+            for(int i = 0; i < SIZE; i++)
+            {
+                for(int j = 0; j < SIZE; j++)
+                {
+                    if(data[i,j] < siki)
+                    {
+                        kekka_binary[i, j] = 0;
+                    }
+                    else
+                    {
+                        kekka_binary[i, j] = 255;
+                    }
+                }
+            }
+
+            return kekka_binary;
+        }
     }
 }
