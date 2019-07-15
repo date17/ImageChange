@@ -32,7 +32,11 @@ namespace ImageChange
 
         class Form1 : Form
         {
+<<<<<<< HEAD
             List<string> progress = new List<string>(); //処理内容を追加していく
+=======
+            List<string> progress = new List<string>();
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
 
             const int SIZE = 256; //画像の縦横の長さ（変えない）
 
@@ -65,9 +69,12 @@ namespace ImageChange
             Button gaussian = new Button(); //ガウシアンフィルタ
             Button sharpening = new Button(); //鮮鋭化フィルタ
 
+<<<<<<< HEAD
             Button binary = new Button(); //二値化
             TextBox binaryThreshold = new TextBox(); //二値化の閾値を決めるテキストボックス
 
+=======
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
             Button kaityou = new Button(); //変換グラフを用いた階調変換
             TextBox ganma = new TextBox(); //変換グラフを用いた階調変換をする際のγの値を決める
 
@@ -160,6 +167,7 @@ namespace ImageChange
                 sharpening.Size = new Size(100, 20);
                 sharpening.Click += new EventHandler(Sharpening_click);
 
+<<<<<<< HEAD
                 //二値化をするボタン
                 binary.Text = "二値化";
                 binary.Location = new Point(620, 630);
@@ -171,6 +179,8 @@ namespace ImageChange
                 binaryThreshold.Size = new Size(100, 20);
 
 
+=======
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
                 //変換グラフを用いる処理を実行するボタン
                 kaityou.Text = "変換グラフ";
                 kaityou.Location = new Point(20, 660);
@@ -246,8 +256,11 @@ namespace ImageChange
                 Controls.Add(initialize);
                 Controls.Add(gaussian);
                 Controls.Add(sharpening);
+<<<<<<< HEAD
                 Controls.Add(binary);
                 Controls.Add(binaryThreshold);
+=======
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
                 Controls.Add(autocorrelation);
                 Controls.Add(saveImage);
                 Controls.Add(progressImage);
@@ -260,6 +273,7 @@ namespace ImageChange
             //画像を作成する
             void GetImage_click(object sender, EventArgs e)
             {
+<<<<<<< HEAD
                 //「""」がパスの中に含まれているときの「""」の除去
                 var provisionalPass = passName.Text.Split('"');
                 if (provisionalPass.Length > 1)
@@ -283,6 +297,20 @@ namespace ImageChange
 
                     imageTitle.Text = "元画像"; //画像のタイトル
                 }
+=======
+                //テキストボックスに書かれた画像のパスを代入
+                var pass = passName.Text;
+
+                change = new Change(pass); //Changeクラスのオブジェクトを作成（引数はパス）
+
+                imagepix = change.imagepix(); //上記で作成したChangeクラスのインスタンスでimagepixメソッドを呼び出す。そして格納。
+
+                buffer = new Change(pass).imagepix(); //元画像のデータを格納しておく（初期化に対応させるため）
+
+                pictureBox1.Image = change.changeRaw(); //生成したインスタンスでchangeRawメソッドを呼び出し、picureBoxの画像に代入。
+
+                imageTitle.Text = "元画像"; //画像のタイトル
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
 
             }
 
@@ -526,6 +554,7 @@ namespace ImageChange
 
             }
 
+<<<<<<< HEAD
             //二値化をする
             void Binary_click(object sender, EventArgs e)
             {
@@ -581,6 +610,8 @@ namespace ImageChange
                 }
             }
 
+=======
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
             //自己相関を求める
             void Autocorrelation_click(object sender, EventArgs e)
             {

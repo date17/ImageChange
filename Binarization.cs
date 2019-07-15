@@ -9,6 +9,7 @@ namespace ImageChange
 {
     class Binarization
     {
+<<<<<<< HEAD
         public int[,] Binary_click(byte[,] data, int siki)
         {
             const int SIZE = 256;
@@ -31,5 +32,7 @@ namespace ImageChange
 
             return kekka_binary;
         }
+=======
+>>>>>>> 514173b9de7afb00bd1171dbfcc34dced302085c
     }
 }
