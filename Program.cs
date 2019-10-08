@@ -32,7 +32,9 @@ namespace ImageChange
 
         class Form1 : Form
         {
-            List<string> progress = new List<string>();
+            List<string> progress = new List<string>(); //処理内容を追加していく
+
+            List<ImageList> imageAll = new List<ImageList>(); //すべての処理とそのデータを格納する
 
             const int SIZE = 256; //画像の縦横の長さ（変えない）
 
@@ -44,6 +46,8 @@ namespace ImageChange
 
             Bitmap bitmapraw = new Bitmap(SIZE, SIZE);  //画像の画素をセットしてpictureBox1に格納される。
 
+            Bitmap bitmapBefore = new Bitmap(SIZE, SIZE); //処理直前の画素をセットしてpictureBeforeBoxに格納。
+
             Average averages = new Average();                                  //平均値を求めるクラスAverageのインスタンスを生成
             StandardDiviation standardDiviations = new StandardDiviation();    //標準偏差を求めるクラスStandardDvisionクラスのインスタンスを生成
 
@@ -52,8 +56,10 @@ namespace ImageChange
             Button getImage;  //画像を作成する（raw to bmp）
 
             Label imageTitle = new Label(); //画像のタイトル
+            Label imageBeforeTitle = new Label(); //処理直前の画像のタイトル
 
             PictureBox pictureBox1 = new PictureBox(); //画像を表示
+            PictureBox pictureBeforeBox = new PictureBox(); //処理前の画像を表示
 
             Button average = new Button(); //平均値
             Button hyoujun = new Button(); //標準偏差
@@ -65,16 +71,28 @@ namespace ImageChange
             Button gaussian = new Button(); //ガウシアンフィルタ
             Button sharpening = new Button(); //鮮鋭化フィルタ
 
+            Button binary = new Button(); //二値化
+            TextBox binaryThreshold = new TextBox(); //二値化の閾値を決めるテキストボックス
+            Label binaryName; //二値化の閾値を決めるテキストボックスの位置を示す
+
             Button kaityou = new Button(); //変換グラフを用いた階調変換
             TextBox ganma = new TextBox(); //変換グラフを用いた階調変換をする際のγの値を決める
+            Label ganmaName;               //γの値を入力するテキストボックスの位置を示す
 
             Button initialize = new Button(); //初期化
 
             Button saveImage; //画像の保存
+            TextBox saveImageName; //画像を保存する時にしたい名前を入力するテキストボックス
+            Label saveNameBox; //画像を保存するときの名前を入力するテキストボックスの位置を示す
 
             TextBox progressImage; //処理の経過を格納するテキストボックス
 
             Button histgram; //ヒストグラムを表示するボタン
+
+            Button imagealls; //処理した画像をすべてならべたフォームに移動するボタン
+            int pictureCounter = 0;
+            List<byte[,]> imageDatas = new List<byte[,]>();//処理した順にデータを格納
+
 
 
 
@@ -82,7 +100,7 @@ namespace ImageChange
             {
 
                 Text = "画像処理";　//フォームのタイトル
-                ClientSize = new Size(900, 900);  //フォームのクライアント領域のサイズ
+                ClientSize = new Size(1000, 900);  //フォームのクライアント領域のサイズ
 
 
                 //画像のパスを代入するテキストボックス
@@ -110,10 +128,24 @@ namespace ImageChange
                 pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
 
 
+                //処理前の画像
+                pictureBeforeBox.BorderStyle = BorderStyle.FixedSingle;
+                pictureBeforeBox.Location = new Point(5, 20);
+                pictureBeforeBox.Size = new Size(256, 256);
+                pictureBeforeBox.SizeMode = PictureBoxSizeMode.CenterImage;
+
+
                 //元画像のタイトル
                 imageTitle.Text = "画像はまだ生成されていません";
                 imageTitle.Location = new Point(322, 5);
                 imageTitle.AutoSize = true;
+
+
+                //処理前の画像のタイトル
+                imageBeforeTitle.Text = "処理直前の画像";
+                imageBeforeTitle.Location = new Point(5, 5);
+                imageBeforeTitle.AutoSize = true;
+
 
                 //平均値を求めるボタン
                 average.Text = "平均値";
@@ -157,6 +189,25 @@ namespace ImageChange
                 sharpening.Size = new Size(100, 20);
                 sharpening.Click += new EventHandler(Sharpening_click);
 
+                //二値化をするボタン
+                binary.Text = "二値化";
+                binary.Location = new Point(620, 630);
+                binary.Size = new Size(100, 20);
+                binary.Click += new EventHandler(Binary_click);
+
+                //二値化をするときに用いる閾値を設定するテキストボックス
+                binaryThreshold.Location = new Point(780, 630);
+                binaryThreshold.Size = new Size(100, 20);
+
+                //二値化の閾値を入力するテキストボックスを示すラベル
+                binaryName = new Label()
+                {
+                    Text = "閾値：",
+                    Location = new Point(740, 635),
+                    AutoSize = true
+                };
+
+
                 //変換グラフを用いる処理を実行するボタン
                 kaityou.Text = "変換グラフ";
                 kaityou.Location = new Point(20, 660);
@@ -164,9 +215,17 @@ namespace ImageChange
                 kaityou.Click += new EventHandler(Kaityou_click);
 
                 //γの値を決めるテキストボックス
-                ganma.Location = new Point(140, 660);
+                ganma.Location = new Point(170, 660);
                 ganma.Size = new Size(100, 20);
                 ganma.Multiline = false;
+
+                //γの値を入力するテキストボックスの位置を示すラベル
+                ganmaName = new Label()
+                {
+                    Text = "γ：",
+                    Location = new Point(140, 665),
+                    AutoSize = true
+                };
 
                 //初期化をするボタン
                 initialize.Text = "初期化";
@@ -198,6 +257,22 @@ namespace ImageChange
                 };
                 saveImage.Click += new EventHandler(SaveImage_click);
 
+                //保存する画像の名前を決める
+                saveImageName = new TextBox()
+                {
+                    Location = new Point(180, 720),
+                    Size = new Size(200, 20),
+                    Multiline = false
+                };
+
+                //保存する画像の名前を決めるテキストボックスを示すラベル
+                saveNameBox = new Label()
+                {
+                    Text = "保存名：",
+                    Location = new Point(130, 725),
+                    AutoSize = true
+                };
+
                 //画像の処理を記録する
                 progressImage = new TextBox()
                 {
@@ -215,15 +290,25 @@ namespace ImageChange
                     Location = new Point(20, 750),
                     Size = new Size(100, 20)
                 };
-
                 histgram.Click += new EventHandler(Histgam_click);
+
+                //すべての画像を表示する画面に移動するボタン
+                imagealls = new Button()
+                {
+                    Text = "全画像表示",
+                    Location = new Point(200, 750),
+                    Size = new Size(150, 20)
+                };
+                imagealls.Click += new EventHandler(Imagealls_click);
 
 
 
                 Controls.Add(passName);
                 Controls.Add(getImage);
                 Controls.Add(pictureBox1);
+                Controls.Add(pictureBeforeBox);
                 Controls.Add(imageTitle);
+                Controls.Add(imageBeforeTitle);
                 Controls.Add(average);
                 Controls.Add(hyoujun);
                 Controls.Add(sobel);
@@ -232,30 +317,54 @@ namespace ImageChange
                 Controls.Add(initialize);
                 Controls.Add(gaussian);
                 Controls.Add(sharpening);
+                Controls.Add(binary);
+                Controls.Add(binaryThreshold);
+                Controls.Add(binaryName);
                 Controls.Add(autocorrelation);
                 Controls.Add(saveImage);
+                Controls.Add(saveImageName);
+                Controls.Add(saveNameBox);
                 Controls.Add(progressImage);
                 Controls.Add(kaityou);
                 Controls.Add(ganma);
+                Controls.Add(ganmaName);
                 Controls.Add(histgram);
+                Controls.Add(imagealls);
             }
 
 
             //画像を作成する
             void GetImage_click(object sender, EventArgs e)
             {
-                //テキストボックスに書かれた画像のパスを代入
-                var pass = passName.Text;
+                //「""」がパスの中に含まれているときの「""」の除去
+                var provisionalPass = passName.Text.Split('"');
+                if (provisionalPass.Length > 1)
+                {
+                    MessageBox.Show("パスの中に「\"」が含まれています。\nパスの中から「\"」を取り除いてください");
+                }
+                else
+                {
+                    //テキストボックスに書かれた画像のパスを代入
+                    var pass = passName.Text;
 
-                change = new Change(pass); //Changeクラスのオブジェクトを作成（引数はパス）
 
-                imagepix = change.imagepix(); //上記で作成したChangeクラスのインスタンスでimagepixメソッドを呼び出す。そして格納。
 
-                buffer = new Change(pass).imagepix(); //元画像のデータを格納しておく（初期化に対応させるため）
+                    change = new Change(pass); //Changeクラスのオブジェクトを作成（引数はパス）
 
-                pictureBox1.Image = change.changeRaw(); //生成したインスタンスでchangeRawメソッドを呼び出し、picureBoxの画像に代入。
+                    imagepix = change.imagepix(); //上記で作成したChangeクラスのインスタンスでimagepixメソッドを呼び出す。そして格納。
 
-                imageTitle.Text = "元画像"; //画像のタイトル
+                    buffer = new Change(pass).imagepix(); //元画像のデータを格納しておく（初期化に対応させるため）
+
+                    bitmapraw = change.changeRaw();
+                    pictureBox1.Image = bitmapraw; //生成したインスタンスでchangeRawメソッドを呼び出し、picureBoxの画像に代入。
+
+                    imageTitle.Text = "元画像"; //画像のタイトル
+                    imageDatas.Add(imagepix);
+
+                    imageAll.Add(new ImageList(imagepix, "元画像", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                    pictureCounter++;  //処理順に画像のデータを格納した配列の中身の番号として使う。次の処理のためのインクリメント
+                }
 
             }
 
@@ -310,9 +419,14 @@ namespace ImageChange
             //ソーベルフィルタ
             void Sobel_click(object sender, EventArgs e)
             {
+
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
                 Sobel sobels = new Sobel();
 
                 var kekka_sobel = sobels.sobel_click(imagepix);
+
+ 
 
                 for (int i = 0; i < SIZE; i++)
                 {
@@ -332,6 +446,7 @@ namespace ImageChange
                 }
 
                 pictureBox1.Image = bitmapraw;
+                pictureBeforeBox.Image = bitmapBefore;
                 imageTitle.Text = "ソーベルフィルタ適用";
                 progress.Add("ソーベルフィルタ適用");
 
@@ -343,12 +458,18 @@ namespace ImageChange
                 }
                 progressImage.Text = text;
 
+                
 
+                imageAll.Add(new ImageList(imagepix, "ソーベルフィルタ適用", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                pictureCounter++;
             }
 
             //ラプラシアンフィルタを適用
             void Laplacian_click(object sender, EventArgs e)
             {
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
                 Laplacian laplacians = new Laplacian();
 
                 var kekka_lap = laplacians.laplacian_click(imagepix);
@@ -371,6 +492,7 @@ namespace ImageChange
                 }
 
                 pictureBox1.Image = bitmapraw;
+                pictureBeforeBox.Image = bitmapBefore;
                 imageTitle.Text = "ラプラシアンフィルタ適用";
                 progress.Add("ラプラシアンフィルタ適用");
 
@@ -382,11 +504,17 @@ namespace ImageChange
                 }
                 progressImage.Text = text;
 
+
+                imageAll.Add(new ImageList(imagepix, "ラプラシアンフィルタ適用", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                pictureCounter++;
             }
 
             //平滑化フィルタを適用
             void Smoothing_click(object sender, EventArgs e)
             {
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
                 Smoothing smoothings = new Smoothing();
 
                 var kekka_smoothing = smoothings.smoothing_click(imagepix);
@@ -409,6 +537,7 @@ namespace ImageChange
                 }
 
                 pictureBox1.Image = bitmapraw;
+                pictureBeforeBox.Image = bitmapBefore;
                 imageTitle.Text = "平滑化フィルタ適用";
                 progress.Add("平滑化フィルタ適用");
 
@@ -420,11 +549,16 @@ namespace ImageChange
                 }
                 progressImage.Text = text;
 
+                imageAll.Add(new ImageList(imagepix, "平滑化フィルタ", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                pictureCounter++;
             }
 
             //ガウシアンフィルタを適用
             void Gaussian_click(object sender, EventArgs e)
             {
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
                 Gaussian gaussians = new Gaussian();
 
                 var kekka_gaussian = gaussians.gaussian_click(imagepix);
@@ -447,6 +581,7 @@ namespace ImageChange
                 }
 
                 pictureBox1.Image = bitmapraw;
+                pictureBeforeBox.Image = bitmapBefore;
                 imageTitle.Text = "ガウシアンフィルタ適用";
                 progress.Add("ガウシアンフィルタ適用");
 
@@ -458,11 +593,16 @@ namespace ImageChange
                 }
                 progressImage.Text = text;
 
+                imageAll.Add(new ImageList(imagepix, "ガウシアンフィルタ適用", change.imageListChange(imagepix)));
+
+                pictureCounter++;
             }
 
             //鮮鋭化フィルタを適用
             void Sharpening_click(object sender, EventArgs e)
             {
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
                 Sharpening sharpenings = new Sharpening();
 
                 var kekka_sharpening = sharpenings.sharpening_click(imagepix);
@@ -486,6 +626,7 @@ namespace ImageChange
                 }
 
                 pictureBox1.Image = bitmapraw;
+                pictureBeforeBox.Image = bitmapBefore;
                 imageTitle.Text = "鮮鋭化フィルタ適用";
                 progress.Add("鮮鋭化フィルタ適用");
 
@@ -497,6 +638,68 @@ namespace ImageChange
                 }
                 progressImage.Text = text;
 
+                imageAll.Add(new ImageList(imagepix, "鮮鋭化フィルタ適用", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                pictureCounter++;
+            }
+
+            //二値化をする
+            void Binary_click(object sender, EventArgs e)
+            {
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
+                var value = binaryThreshold.Text;
+
+                if(value.Length < 1)
+                {
+                    MessageBox.Show("閾値を設定してください。");
+                }
+                else
+                {
+                    var sikiiValue = int.Parse(value);
+
+                    Binarization binary = new Binarization();
+
+                    var kekka_binary = binary.Binary_click(imagepix, sikiiValue);
+
+                    for(int i = 0; i < SIZE; i++)
+                    {
+                        for(int j = 0; j < SIZE; j++)
+                        {
+                            bitmapraw.SetPixel(
+                                i,
+                                j,
+                                Color.FromArgb(
+                                    kekka_binary[j, i],
+                                    kekka_binary[j, i],
+                                    kekka_binary[j, i]
+                            ));
+
+                            imagepix[i, j] = (byte)kekka_binary[i, j];
+                            
+                        }
+                    }
+
+                    pictureBox1.Image = bitmapraw;
+                    pictureBeforeBox.Image = bitmapBefore;
+                    imageTitle.Text = "二値化";
+
+                    progress.Add("二値化処理(閾値 = " + value + ")");
+
+                    var text = "";
+
+                    foreach (var i in progress)
+                    {
+                        text += i;
+                        text += "\r\n";
+                    }
+
+                    progressImage.Text = text;
+
+                    imageAll.Add(new ImageList(imagepix, "二値化処理（閾値 = " + value + "）", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                    pictureCounter++;
+                }
             }
 
             //自己相関を求める
@@ -530,7 +733,9 @@ namespace ImageChange
             //変換グラフを用いた階調変換
             void Kaityou_click(object sender, EventArgs e)
             {
-                 if (ganma.Text.Length != 0)
+                bitmapBefore = new Before_Bitmap().beforeBitmapChange(imagepix);
+
+                if (ganma.Text.Length != 0)
                  {
                     var gannma = double.Parse(ganma.Text);
 
@@ -557,9 +762,10 @@ namespace ImageChange
                     }
 
                     pictureBox1.Image = bitmapraw;
+                    pictureBeforeBox.Image = bitmapBefore;
                     imageTitle.Text = "変換グラフを利用";
 
-                    progress.Add("変換グラフを利用");
+                    progress.Add("変換グラフを利用" + "(γ = " + ganma.Text + ")");
                    
                     var text = "";
                     foreach(var i in progress)
@@ -568,8 +774,12 @@ namespace ImageChange
                         text += "\r\n";
                     }
 
-                     progressImage.Text = text;
-                  
+                    progressImage.Text = text;
+
+                    imageAll.Add(new ImageList(imagepix, "変換グラフ適用（γ = " + ganma.Text + "）", change.imageListChange(imagepix))); //リストに処理した画像データと処理の内容を格納
+
+                    pictureCounter++;
+
                 }
                 else
                 {
@@ -611,22 +821,41 @@ namespace ImageChange
                 }
 
                 pictureBox1.Image = bitmapraw;
+
+                pictureBeforeBox.Image = null;
+
                 imageTitle.Text = "元画像";
+
                 progress.Clear();
 
                 progressImage.Text = "初期化";
+
+                imageAll.Clear();
+
+                imageAll.Add(new ImageList(buffer, "元画像", change.imageListChange(buffer)));
+
+                pictureCounter++;
 
             }
 
             //画像を保存するメソッド
             void SaveImage_click(object sender, EventArgs e)
             {
+                string saveName = "";
+                if(saveImageName.Text.Length == 0)
+                {
+                    saveName = "newImage";
+                }
+                else
+                {
+                    saveName = saveImageName.Text;
+                }
                 bitmapraw.Save(
-                    @"C:\\Users\\date\\Desktop\\newImage.jpg",
+                    @"C:\\Users\\date\\Desktop\\" + saveName + ".jpg",
                     System.Drawing.Imaging.ImageFormat.Jpeg
                     );
 
-                MessageBox.Show("画像が保存されました。");
+                MessageBox.Show("画像が保存されました。（保存名 : " + saveName + "）");
             }
 
             //ヒストグラムを表示するメソッド
@@ -635,6 +864,14 @@ namespace ImageChange
                 Hisutogram forms = new Hisutogram(imagepix);
 
                 forms.Show();
+            }
+
+            //全画像を表示するメソッド
+            void Imagealls_click(object sender, EventArgs e)
+            {
+                var formImageAlls = new ImageAll(imageAll);
+
+                formImageAlls.Show();
             }
         }
 

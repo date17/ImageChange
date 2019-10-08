@@ -50,12 +50,17 @@
   <ItemGroup>
     <Compile Include="Autocorrelation.cs" />
     <Compile Include="Average.cs" />
+    <Compile Include="Before Bitmap.cs" />
     <Compile Include="Binarization.cs" />
     <Compile Include="Change.cs" />
     <Compile Include="Gaussian.cs" />
     <Compile Include="Hisutogram.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ImageAll.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImageList.cs" />
     <Compile Include="Kaityou.cs" />
     <Compile Include="Laplacian.cs" />
     <Compile Include="Program.cs" />
